@@ -36,8 +36,8 @@ class asteroid:
 #---------------------METHODS-------------------------------#
 
 def send_asteroid():
-    curr_size = random.randint(80, 120)
-    curr_asteroid = asteroid(-curr_size, random.randint(0, screen_height), random.randint(5, 15),random.randint(-3,3), curr_size, random.randint(0, 20) * 1000)
+    curr_size = random.randint(100, 140)
+    curr_asteroid = asteroid(-curr_size, random.randint(0, screen_height), random.randint(15, 25),random.randint(-3,3), curr_size, random.randint(2000, 25000))
     asteroids_array.append(curr_asteroid)
 
 def maintain_asteroid(asteroid):
@@ -87,25 +87,32 @@ def main():
     winner = False
     x = screen_width // 2
     y = screen_height // 2
+    charge = 300
     
     global reset_time
 
-    set_difficulty(40)
+    set_difficulty(100)
     
 
     while alive:
 
+        if charge < 400:
+            charge += 2
+            
+
         curr_time = pygame.time.get_ticks() - reset_time
-        if curr_time > 25000:
+        if curr_time > 30000:
             pygame.mouse.set_visible(100)
             alive = False
             winner = True
         
         screen.fill("black")
+        
+        pygame.draw.rect(screen, 'blue', (screen_width - charge - 20, 20, charge, 20))
         pygame.draw.rect(screen, "white", (x, y, player_size, player_size))
 
         keys = pygame.key.get_pressed()
-        if keys[pygame.K_LSHIFT]:
+        if keys[pygame.K_RSHIFT] or keys[pygame.K_LSHIFT]:
             if keys[pygame.K_w] and y > 0:
                 y -= 10
             if keys[pygame.K_s] and y < (screen_height - player_size):
@@ -123,6 +130,15 @@ def main():
                 x -= 5
             if keys[pygame.K_d] and x < (screen_width - player_size):
                 x += 5
+
+        if keys[pygame.K_SPACE] and charge == 400:
+            pygame.draw.rect(screen, 'yellow', (0, y+5, x, 20))
+            for asteroid in asteroids_array:
+                if asteroid.x_coord > 0 and asteroid.x_coord < x and not (asteroid.y_coord - asteroid.size) > y + 25 and not (asteroid.y_coord + asteroid.size) < y + 5:
+                    asteroids_array.remove(asteroid)
+            charge = 0
+
+
 
         for asteroid in asteroids_array:
             if collision(x, y, player_size, player_size, asteroid.x_coord, asteroid.y_coord, asteroid.size):
@@ -168,8 +184,11 @@ def main():
 
         screen.blit(text, text_rect)
 
+        
+        keys = pygame.key.get_pressed()
+        
 
-        if pygame.mouse.get_pressed()[0] and mouse_over_bool:
+        if (pygame.mouse.get_pressed()[0] and mouse_over_bool) or keys[pygame.K_RETURN]:
             reset_time = pygame.time.get_ticks()
             print(reset_time)
             asteroids_array.clear()
@@ -214,7 +233,10 @@ def main():
         screen.blit(text, text_rect)
 
 
-        if pygame.mouse.get_pressed()[0] and mouse_over_bool:
+        keys = pygame.key.get_pressed()
+
+
+        if (pygame.mouse.get_pressed()[0] and mouse_over_bool) or keys[pygame.K_RETURN]:
             reset_time = pygame.time.get_ticks()
             print(reset_time)
             asteroids_array.clear()
